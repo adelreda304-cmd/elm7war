@@ -161,9 +161,15 @@ app.get('/admin', (req, res) => {
 });
 
 // ================== START ==================
-app.listen(process.env.PORT || 5000, async () => {
-    if (!await Admin.findOne({ email: 'admin@elm7war.com' })) {
-        await Admin.create({ email: 'admin@elm7war.com', password: 'ChangeMe123' });
-    }
-    console.log('Elm7war running');
-});
+// ================== START ==================
+// Vercel requires exporting the app
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(process.env.PORT || 5000, async () => {
+        if (!await Admin.findOne({ email: 'admin@elm7war.com' })) {
+            await Admin.create({ email: 'admin@elm7war.com', password: 'ChangeMe123' });
+        }
+        console.log('Elm7war running');
+    });
+}
+
+export default app;
