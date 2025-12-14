@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elm7war - Tournaments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            main: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#8b5cf6',
+                            gold: '#f59e0b'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0f172a;
+            color: white;
+        }
+
+        .clip-path-slant {
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+        }
+    </style>
+</head>
+
+<body class="pb-20">
+
+    <!-- Mobile Header -->
+    <header class="fixed top-0 w-full bg-brand-main/90 backdrop-blur-md z-50 border-b border-gray-800">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-black text-brand-accent tracking-tighter">ELM7WAR</h1>
+            <button
+                class="w-10 h-10 rounded-full bg-brand-card flex items-center justify-center text-gray-300 relative">
+                <i class="fas fa-bell"></i>
+                <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-brand-card"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- VIEWS CONTAINER -->
+    <main class="container mx-auto px-4 mt-16 mb-24 min-h-screen">
+
+        <!-- VIEW: HOME -->
+        <div id="view-home" class="view-section animate-fade-in">
+            <!-- Hero Section -->
+            <section
+                class="relative h-64 flex items-center justify-center overflow-hidden rounded-2xl mb-8 bg-gradient-to-br from-brand-accent to-blue-600 shadow-2xl">
+                <div
+                    class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-30 mix-blend-overlay">
+                </div>
+                <div class="text-center z-10 px-4">
+                    <h2 class="text-4xl font-black mb-2 drop-shadow-lg text-white">PLAY & WIN</h2>
+                    <p class="text-lg font-medium text-white/90">Join Daily Free Fire Tournaments</p>
+                    <button onclick="document.getElementById('rooms').scrollIntoView({behavior:'smooth'})"
+                        class="inline-block mt-4 bg-white text-brand-accent px-6 py-2 rounded-full font-bold shadow-lg transform active:scale-95 transition">
+                        Start Now <i class="fas fa-arrow-down ml-2"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Active Rooms -->
+            <section id="rooms" class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fas fa-fire text-orange-500 animate-pulse"></i> Live Rooms
+                    </h3>
+                    <span
+                        class="text-xs text-brand-accent bg-brand-card px-3 py-1 rounded-full border border-gray-700 font-mono">LIVE
+                        UPDATES</span>
+                </div>
+                <div id="rooms-list" class="space-y-4">
+                    <!-- Loading Skeleton -->
+                    <div class="animate-pulse bg-brand-card rounded-2xl p-4 border border-gray-800">
+                        <div class="h-4 bg-gray-700 rounded w-1/3 mb-4"></div>
+                        <div class="h-20 bg-gray-800 rounded mb-4"></div>
+                        <div class="h-10 bg-gray-700 rounded"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Results (Home Preview) -->
+            <section>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fas fa-trophy text-brand-gold"></i> Latest Winners
+                    </h3>
+                    <button onclick="nav('rank')" class="text-sm text-brand-accent hover:text-white transition">View
+                        All</button>
+                </div>
+                <div id="results-list" class="grid grid-cols-2 gap-4">
+                    <!-- Dynamic Results -->
+                </div>
+            </section>
+        </div>
+
+        <!-- VIEW: RANK (Leaderboard) -->
+        <div id="view-rank" class="view-section hidden animate-fade-in">
+            <h2 class="text-3xl font-black text-brand-gold mb-6 text-center drop-shadow-lg">Global Leaderboard</h2>
+            <div class="bg-brand-card rounded-2xl border border-gray-800 overflow-hidden shadow-xl">
+                <table class="w-full text-left">
+                    <thead class="bg-black/30 text-gray-400 text-xs uppercase">
+                        <tr>
+                            <th class="p-4 text-center">#</th>
+                            <th class="p-4">Player</th>
+                            <th class="p-4 text-center">Wins</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-list" class="divide-y divide-gray-800 text-sm">
+                        <!-- Dynamic Content -->
+                    </tbody>
+                </table>
+                <div id="loader-rank" class="p-8 text-center text-gray-500">Loading...</div>
+            </div>
+        </div>
+
+        <!-- VIEW: PROFILE -->
+        <div id="view-profile" class="view-section hidden animate-fade-in">
+            <h2 class="text-3xl font-black mb-6 text-center">Player Profile</h2>
+
+            <!-- Search Box -->
+            <div class="bg-brand-card p-6 rounded-2xl border border-gray-800 shadow-xl mb-8">
+                <label class="block text-gray-400 text-xs font-bold uppercase mb-2">Find your history</label>
+                <div class="flex gap-2">
+                    <input type="text" id="profile-search-input" placeholder="Enter FreeFire ID"
+                        class="w-full bg-brand-main border border-gray-600 rounded-xl px-4 py-3 focus:border-brand-accent outline-none font-mono">
+                    <button onclick="searchProfile()"
+                        class="bg-brand-accent hover:bg-blue-600 px-6 rounded-xl font-bold transition">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Profile Content -->
+            <div id="profile-content" class="hidden">
+                <div class="flex items-center gap-4 mb-6">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-tr from-brand-accent to-blue-500 rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">
+                        <i class="fas fa-user-astronaut"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold" id="profile-name">Player Name</h3>
+                        <div class="text-gray-400 font-mono text-sm" id="profile-id">ID: 123456</div>
+                    </div>
+                </div>
+
+                <h3 class="font-bold mb-4 border-b border-gray-800 pb-2">Tournament History</h3>
+                <div id="profile-history" class="space-y-3">
+                    <!-- Dynamic History -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 w-full bg-brand-main/90 backdrop-blur-md border-t border-gray-800 pb-safe z-50">
+        <div class="flex justify-around items-center h-16">
+            <button onclick="nav('home')" class="nav-btn text-brand-accent flex flex-col items-center group"
+                data-target="home">
+                <i class="fas fa-home text-xl mb-1 group-hover:scale-110 transition"></i>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Home</span>
+            </button>
+
+            <div class="relative -top-6">
+                <button
+                    onclick="nav('home'); setTimeout(()=>document.getElementById('rooms').scrollIntoView({behavior:'smooth'}), 100)"
+                    class="w-16 h-16 bg-gradient-to-tr from-brand-accent to-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-brand-accent/50 text-white transform active:scale-90 transition border-4 border-brand-main">
+                    <i class="fas fa-gamepad text-2xl"></i>
+                </button>
+            </div>
+
+            <button onclick="nav('rank')"
+                class="nav-btn text-gray-500 flex flex-col items-center group hover:text-white transition"
+                data-target="rank">
+                <i class="fas fa-chart-bar text-xl mb-1 group-hover:scale-110 transition"></i>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Rank</span>
+            </button>
+
+            <button onclick="nav('profile')"
+                class="nav-btn text-gray-500 flex flex-col items-center group hover:text-white transition"
+                data-target="profile">
+                <i class="fas fa-user text-xl mb-1 group-hover:scale-110 transition"></i>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Join Modal -->
+    <div id="modal-join" class="fixed inset-0 bg-black/90 z-[60] hidden flex items-end sm:items-center justify-center">
+        <div class="bg-brand-card w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 transform transition-transform duration-300 translate-y-full"
+            id="modal-content">
+            <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-2xl font-bold mb-2">Join Room</h3>
+            <p class="text-gray-400 text-sm mb-6" id="modal-room-name">Room Details...</p>
+
+            <form onsubmit="handleJoin(event)" class="space-y-4">
+                <input type="hidden" id="join-room-id">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Your Name</label>
+                    <input type="text" id="join-name"
+                        class="w-full bg-brand-main border border-gray-700 rounded-xl p-4 focus:border-brand-accent outline-none font-bold"
+                        placeholder="e.g. Ahmed King" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">FreeFire ID</label>
+                    <input type="text" id="join-ffid"
+                        class="w-full bg-brand-main border border-gray-700 rounded-xl p-4 focus:border-brand-accent outline-none font-mono text-brand-gold"
+                        placeholder="e.g. 123456789" required>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-gradient-to-r from-brand-accent to-blue-600 py-4 rounded-xl font-black text-lg shadow-lg mt-4 active:scale-95 transition">
+                    CONFIRM JOIN
+                </button>
+            </form>
+            <button onclick="closeModal()" class="w-full py-4 text-gray-500 font-bold mt-2">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-white text-black px-6 py-3 rounded-full shadow-2xl z-[70] translate-y-[-200%] transition-transform duration-300 font-bold flex items-center gap-3">
+        <i class="fas fa-check-circle text-green-500 text-xl"></i>
+        <span id="toast-msg">Success!</span>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+
+        // --- INIT ---
+        window.addEventListener('load', () => {
+            fetchRooms();
+            fetchResults();
+
+            // Modal Animation Setup
+            const modal = document.getElementById('modal-join');
+            const content = document.getElementById('modal-content');
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+        });
+
+        async function fetchRooms() {
+            try {
+                const res = await fetch(`${API_BASE}/rooms`);
+                const rooms = await res.json();
+                renderRooms(rooms);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function fetchResults() {
+            try {
+                const res = await fetch(`${API_BASE}/results`);
+                const results = await res.json();
+                renderResults(results);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderRooms(rooms) {
+            const container = document.getElementById('rooms-list');
+            if (rooms.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-10">No active rooms right now. Check back later!</div>';
+                return;
+            }
+            container.innerHTML = rooms.map(room => `
+                <div class="bg-brand-card rounded-2xl p-1 border border-gray-800 shadow-xl overflow-hidden relative group">
+                    <div class="absolute top-0 right-0 p-3 z-10">
+                        <span class="${room.isPaid ? 'bg-brand-gold text-black' : 'bg-green-500 text-white'} text-xs font-black px-2 py-1 rounded shadow transform rotate-3 inline-block">
+                            ${room.isPaid ? 'PAID' : 'FREE'}
+                        </span>
+                    </div>
+                    
+                    <div class="bg-brand-main/50 p-5 rounded-xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-bold text-lg leading-tight mb-1">${room.name}</h4>
+                                <div class="text-xs text-brand-accent font-bold uppercase tracking-wider">${room.mode} // PRIZE: ${room.prize || 'HONOR'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 text-sm text-gray-400 mb-6">
+                            <div class="flex items-center gap-1"><i class="far fa-clock"></i> ${new Date(room.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div class="flex items-center gap-1"><i class="far fa-calendar"></i> ${new Date(room.startTime).toLocaleDateString()}</div>
+                        </div>
+
+                        <button onclick="openJoinModal('${room._id}', '${room.name}')" class="w-full bg-gray-700 hover:bg-brand-accent text-white font-bold py-3 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 group-hover:bg-brand-accent">
+                            JOIN MATCH <i class="fas fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderResults(results) {
+            const container = document.getElementById('results-list');
+            // Mocking recent results if empty for visual demo
+            if (results.length === 0) {
+                container.innerHTML = '<div class="col-span-2 text-center text-gray-500 text-sm">No results yet.</div>';
+                return;
+            }
+            container.innerHTML = results.slice(0, 4).map(res => `
+                <div class="bg-brand-card p-3 rounded-xl border border-gray-800 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-brand-gold/10 rounded-full flex items-center justify-center text-brand-gold">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500">Winner</div>
+                        <div class="font-bold text-sm truncate w-24">${res.winners[0]}</div>
+                    </div>
+                </div>
+             `).join('');
+        }
+
+        // --- MODAL & ACTIONS ---
+        function openJoinModal(id, name) {
+            document.getElementById('join-room-id').value = id;
+            document.getElementById('modal-room-name').innerText = name;
+            const modal = document.getElementById('modal-join');
+            const content = document.getElementById('modal-content');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('translate-y-full');
+            }, 10);
+        }
+
+        function closeModal() {
+            const content = document.getElementById('modal-content');
+            content.classList.add('translate-y-full');
+            setTimeout(() => {
+                document.getElementById('modal-join').classList.add('hidden');
+            }, 300);
+        }
+
+        async function handleJoin(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            btn.disabled = true;
+
+            const body = {
+                roomId: document.getElementById('join-room-id').value,
+                playerName: document.getElementById('join-name').value,
+                freeFireId: document.getElementById('join-ffid').value
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (res.ok) {
+                    showToast('Registration Successful!');
+                    closeModal();
+                    e.target.reset();
+                } else {
+                    showToast('Failed to join', true);
+                }
+            } catch (err) {
+                showToast('Error connecting', true);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-2xl z-[70] transition-transform duration-300 font-bold flex items-center gap-3 ${isError ? 'bg-red-500 text-white' : 'bg-white text-black'}`;
+
+            toast.classList.remove('translate-y-[-200%]');
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-200%]');
+            }, 3000);
+        }
+
+    </script>
+    <script>
+        // --- NAVIGATION & VIEWS ---
+        async function nav(view) {
+            ['home', 'rank', 'profile'].forEach(v => {
+                const el = document.getElementById('view-' + v);
+                const btn = document.querySelector(`button[data-target="${v}"]`);
+                if (v === view) {
+                    el.classList.remove('hidden');
+                    if (btn) {
+                        btn.classList.add('text-brand-accent');
+                        btn.classList.remove('text-gray-500');
+                    }
+                } else {
+                    el.classList.add('hidden');
+                    if (btn) {
+                        btn.classList.remove('text-brand-accent');
+                        btn.classList.add('text-gray-500');
+                    }
+                }
+            });
+
+            if (view === 'rank') fetchLeaderboard();
+        }
+
+        // --- LEADERBOARD ---
+        async function fetchLeaderboard() {
+            const loader = document.getElementById('loader-rank');
+            const list = document.getElementById('leaderboard-list');
+            loader.classList.remove('hidden');
+            list.innerHTML = '';
+
+            try {
+                const res = await fetch(`${API_BASE}/leaderboard`);
+                const data = await res.json();
+
+                if (data.length === 0) {
+                    loader.innerText = 'No records yet.';
+                } else {
+                    loader.classList.add('hidden');
+                    list.innerHTML = data.map((p, i) => `
+                        <tr class="hover:bg-brand-card/50 transition border-b border-gray-800">
+                            <td class="p-4 text-center font-bold text-gray-500">${i + 1}</td>
+                            <td class="p-4 font-bold text-white flex items-center gap-2">
+                                ${i === 0 ? '<i class="fas fa-crown text-yellow-500"></i>' : ''}
+                                ${p.name}
+                            </td>
+                            <td class="p-4 text-center font-mono text-brand-accent font-bold">${p.wins}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch {
+                loader.innerText = 'Error loading rank';
+            }
+        }
+
+        // --- PROFILE ---
+        async function searchProfile() {
+            const query = document.getElementById('profile-search-input').value.trim();
+            if (!query) return showToast('Please enter ID', true);
+
+            const btn = document.querySelector('button[onclick="searchProfile()"]');
+            const originalContents = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/profile/` + query);
+                const history = await res.json();
+
+                document.getElementById('profile-content').classList.remove('hidden');
+                // Ideally name, but we might just have ID
+                document.getElementById('profile-id').innerText = 'ID: ' + query;
+
+                const list = document.getElementById('profile-history');
+                if (history.length === 0) {
+                    list.innerHTML = '<div class="text-center text-gray-500 py-4">No tournaments found.</div>';
+                    document.getElementById('profile-name').innerText = 'Unknown Player';
+                } else {
+                    // Try to infer name from first result if available
+                    if (history[0].playerName) document.getElementById('profile-name').innerText = history[0].playerName;
+
+                    list.innerHTML = history.map(h => `
+                         <div class="bg-brand-card/50 p-4 rounded-xl border border-gray-800 flex justify-between items-center">
+                             <div>
+                                 <div class="font-bold text-sm text-gray-300">Tournament Entry</div>
+                                 <div class="text-xs text-gray-500 font-mono">ID: ${h._id.substr(-6)}</div>
+                             </div>
+                             <span class="px-3 py-1 rounded text-xs font-bold ${h.status === 'approved' ? 'bg-green-500/10 text-green-500' :
+                            h.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
+                                'bg-yellow-500/10 text-yellow-500'
+                        }">${h.status.toUpperCase()}</span>
+                         </div>
+                    `).join('');
+                }
+
+            } catch (e) {
+                showToast('Error searching', true);
+            } finally {
+                btn.innerHTML = originalContents;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>
