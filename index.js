@@ -73,10 +73,17 @@ const adminAuth = (req, res, next) => {
 };
 
 // ================== ADMIN LOGIN ==================
+// ================== ADMIN LOGIN ==================
 app.post('/api/admin/login', async (req, res) => {
+    // Vercel fix: Ensure admin exists on first login attempt
+    if (!await Admin.findOne({ email: 'admin@elm7war.com' })) {
+        await Admin.create({ email: 'admin@elm7war.com', password: 'ChangeMe123' });
+    }
+
     const admin = await Admin.findOne({ email: req.body.email });
     if (!admin) return res.status(401).send('Invalid');
 
+    // Check if password match (or special case for reset if needed)
     const ok = await bcrypt.compare(req.body.password, admin.password);
     if (!ok) return res.status(401).send('Invalid');
 
