@@ -18,6 +18,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Recreate __dirname for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ================== CONFIG ==================
 dotenv.config();
@@ -73,7 +79,6 @@ const adminAuth = (req, res, next) => {
 };
 
 // ================== ADMIN LOGIN ==================
-// ================== ADMIN LOGIN ==================
 app.post('/api/admin/login', async (req, res) => {
     // Vercel fix: Ensure admin exists on first login attempt
     if (!await Admin.findOne({ email: 'admin@elm7war.com' })) {
@@ -83,7 +88,6 @@ app.post('/api/admin/login', async (req, res) => {
     const admin = await Admin.findOne({ email: req.body.email });
     if (!admin) return res.status(401).send('Invalid');
 
-    // Check if password match (or special case for reset if needed)
     const ok = await bcrypt.compare(req.body.password, admin.password);
     if (!ok) return res.status(401).send('Invalid');
 
@@ -161,13 +165,12 @@ app.get('/api/profile/:id', async (req, res) => {
 });
 
 // ================== ADMIN UI ==================
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/admin', (req, res) => {
-    res.sendFile('admin.html', { root: './public' });
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// ================== START ==================
 // ================== START ==================
 // Vercel requires exporting the app
 if (process.env.NODE_ENV !== 'production') {
